@@ -242,36 +242,24 @@ maven_jar(
     sha1 = "48b8230771e573b54ce6e867a9001e75977fe78e",
 )
 
-JETTY_VER = "12.1.3"
+JETTY_VER = "9.4.57.v20241219"
 
 maven_jar(
     name = "jetty-servlet",
-    artifact = "org.eclipse.jetty.ee8:jetty-ee8-servlet:" + JETTY_VER,
-    sha1 = "d69a5afcc26d314f38c694028b8d77b97e8d7a0f",
-)
-
-maven_jar(
-    name = "jetty-nested",
-    artifact = "org.eclipse.jetty.ee8:jetty-ee8-nested:" + JETTY_VER,
-    sha1 = "042d61943b0530d513048ca3c30f35bfa4d74d60",
+    artifact = "org.eclipse.jetty:jetty-servlet:" + JETTY_VER,
+    sha1 = "3e648eebddbf5ad0c0f7698e50c6a69c4a77fd95",
 )
 
 maven_jar(
     name = "jetty-security",
     artifact = "org.eclipse.jetty:jetty-security:" + JETTY_VER,
-    sha1 = "f40cb316ef0e9a168f59eaf0b2d0440b7adcb1f8",
-)
-
-maven_jar(
-    name = "jetty-ee8-security",
-    artifact = "org.eclipse.jetty.ee8:jetty-ee8-security:" + JETTY_VER,
-    sha1 = "166990e1abb82d310147da11ded232390c47f5d4",
+    sha1 = "2b545f68d45b947fdc6e279a0e8ae3630ec10e05",
 )
 
 maven_jar(
     name = "jetty-server",
     artifact = "org.eclipse.jetty:jetty-server:" + JETTY_VER,
-    sha1 = "7741aafcd7d6dc718d04d4cfb883982e361d6577",
+    sha1 = "ad3baf52b98b4a32f5714fe2e58ac0e502b4e4d8",
 )
 
 maven_jar(
@@ -283,25 +271,25 @@ maven_jar(
 maven_jar(
     name = "jetty-http",
     artifact = "org.eclipse.jetty:jetty-http:" + JETTY_VER,
-    sha1 = "3822fb03ec85e4157cf68c1ac661b5d06fd19b25",
+    sha1 = "c7a3a9c599346708894cf355e03105937f45f427",
 )
 
 maven_jar(
     name = "jetty-io",
     artifact = "org.eclipse.jetty:jetty-io:" + JETTY_VER,
-    sha1 = "2c46bf53f41e40df72ff457c40553da2ace7b956",
+    sha1 = "bd0ca6e5c4314972cd91f427fa09dedfe3b84ff5",
 )
 
 maven_jar(
     name = "jetty-util",
     artifact = "org.eclipse.jetty:jetty-util:" + JETTY_VER,
-    sha1 = "9606f6cc440419f62214ceaa2c8ab4b312baf6be",
+    sha1 = "7bf7ea75644ac064199e1e32c66ccd312239f2dc",
 )
 
 maven_jar(
     name = "jetty-util-ajax",
     artifact = "org.eclipse.jetty:jetty-util-ajax:" + JETTY_VER,
-    sha1 = "d0b0a631434ca2cf5a913d2852893779bfecebf8",
+    sha1 = "7b5f144a3d0cbfcac62f2fcb9e14ffa765048f0e",
 )
 
 BOUNCYCASTLE_VER = "1.82"

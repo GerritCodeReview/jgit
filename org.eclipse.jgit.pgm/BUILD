@@ -22,8 +22,6 @@ java_library(
         "//lib:jetty-server",
         "//lib:jetty-servlet",
         "//lib:jetty-util",
-        "//lib:jetty-ee8-nested",
-        "//lib:jetty-ee8-security",
         "//lib:servlet-api",
         "//org.eclipse.jgit.archive:jgit-archive",
         "//org.eclipse.jgit.http.apache:http-apache",
