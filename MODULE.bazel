@@ -31,7 +31,7 @@ BOUNCYCASTLE_VERSION = "1.82"
 
 BYTE_BUDDY_VERSION = "1.17.8"
 
-JETTY_VERSION = "12.1.3"
+JETTY_VERSION = "9.4.53.v20231009"
 
 JMH_VERSION = "1.37"
 
@@ -72,14 +72,11 @@ maven.install(
         "org.bouncycastle:bcpkix-jdk18on:" + BOUNCYCASTLE_VERSION,
         "org.bouncycastle:bcprov-jdk18on:" + BOUNCYCASTLE_VERSION,
         "org.bouncycastle:bcutil-jdk18on:" + BOUNCYCASTLE_VERSION,
-        "org.eclipse.jetty.ee8:jetty-ee8-servlet:" + JETTY_VERSION,
-        "org.eclipse.jetty.ee8:jetty-ee8-nested:" + JETTY_VERSION,
-        "org.eclipse.jetty.ee8:jetty-ee8-security:" + JETTY_VERSION,
+        "org.eclipse.jetty:jetty-servlet:" + JETTY_VERSION,
         "org.eclipse.jetty:jetty-http:" + JETTY_VERSION,
         "org.eclipse.jetty:jetty-io:" + JETTY_VERSION,
         "org.eclipse.jetty:jetty-security:" + JETTY_VERSION,
         "org.eclipse.jetty:jetty-server:" + JETTY_VERSION,
-        "org.eclipse.jetty:jetty-session:" + JETTY_VERSION,
         "org.eclipse.jetty:jetty-util-ajax:" + JETTY_VERSION,
         "org.eclipse.jetty:jetty-util:" + JETTY_VERSION,
         "org.hamcrest:hamcrest:3.0",

@@ -18,8 +18,6 @@ junit_tests(
         "//lib:jetty-server",
         "//lib:jetty-servlet",
         "//lib:jetty-util",
-        "//lib:jetty-ee8-nested",
-        "//lib:jetty-ee8-security",
         "//lib:junit",
         "//lib:servlet-api",
         "//lib:slf4j-api",

@@ -32,7 +32,7 @@ import org.eclipse.jetty.ee8.security.Authenticator;
 import org.eclipse.jetty.ee8.security.ConstraintMapping;
 import org.eclipse.jetty.ee8.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.ee8.security.authentication.BasicAuthenticator;
-import org.eclipse.jetty.ee8.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.security.AbstractLoginService;
 import org.eclipse.jetty.security.RolePrincipal;
 import org.eclipse.jetty.security.UserPrincipal;

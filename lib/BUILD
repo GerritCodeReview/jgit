@@ -153,13 +153,6 @@ java_library(
 )
 
 java_library(
-    name = "jetty-session",
-    # TODO: This should be testonly but org.eclipse.jgit.pgm depends on it.
-    visibility = ["//visibility:public"],
-    exports = ["@maven//:org_eclipse_jetty_jetty_session"],
-)
-
-java_library(
     name = "jetty-server",
     # TODO: This should be testonly but org.eclipse.jgit.pgm depends on it.
     visibility = ["//visibility:public"],
@@ -171,7 +164,7 @@ java_library(
     # TODO: This should be testonly but org.eclipse.jgit.pgm depends on it.
     visibility = ["//visibility:public"],
     exports = [
-        "@maven//:org_eclipse_jetty_ee8_jetty_ee8_servlet",
+        "@maven//:org_eclipse_jetty_jetty_servlet",
         "@maven//:org_eclipse_jetty_jetty_util_ajax",
     ],
 )
@@ -181,20 +174,6 @@ java_library(
     # TODO: This should be testonly but org.eclipse.jgit.pgm depends on it.
     visibility = ["//visibility:public"],
     exports = ["@maven//:org_eclipse_jetty_jetty_util"],
-)
-
-java_library(
-    name = "jetty-ee8-nested",
-    # TODO: This should be testonly but org.eclipse.jgit.pgm depends on it.
-    visibility = ["//visibility:public"],
-    exports = ["@maven//:org_eclipse_jetty_ee8_jetty_ee8_nested"],
-)
-
-java_library(
-    name = "jetty-ee8-security",
-    # TODO: This should be testonly but org.eclipse.jgit.pgm depends on it.
-    visibility = ["//visibility:public"],
-    exports = ["@maven//:org_eclipse_jetty_ee8_jetty_ee8_security"],
 )
 
 
