@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4358d12f_957fd113",
+        "filename": "org.eclipse.jgit/src/org/eclipse/jgit/transport/ReceivePack.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1006192
+      },
+      "writtenOn": "2025-12-12T08:49:24Z",
+      "side": 1,
+      "message": "Not needed",
+      "range": {
+        "startLine": 94,
+        "startChar": 0,
+        "endLine": 139,
+        "endChar": 2
+      },
+      "revId": "84452222d467ce0fab6d9ea708b2cc79f4dea079",
+      "serverId": "173816e5-2b9a-37c3-8a2e-48639d4f1153"
+    }
+  ]
+}
