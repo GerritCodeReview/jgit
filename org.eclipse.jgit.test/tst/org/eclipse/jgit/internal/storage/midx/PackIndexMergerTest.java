@@ -14,14 +14,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 
 import org.eclipse.jgit.internal.storage.file.PackIndex;
 import org.eclipse.jgit.internal.storage.midx.MultiPackIndex.MutableEntry;
 import org.eclipse.jgit.junit.FakeIndexFactory;
 import org.eclipse.jgit.junit.FakeIndexFactory.IndexObject;
+import org.eclipse.jgit.lib.NullProgressMonitor;
 import org.junit.Test;
 
 public class PackIndexMergerTest {
@@ -40,8 +43,8 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000004", 502),
 				oidOffset("0000000000000000000000000000000000000007", 14),
 				oidOffset("0000000000000000000000000000000000000012", 1502));
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", idxOne, "p2", idxTwo, "p3", idxThree));
+		PackIndexMerger merger = createMergerFor("p1", idxOne, "p2", idxTwo,
+				"p3", idxThree);
 		assertEquals(9, merger.getUniqueObjectCount());
 		assertEquals(3, merger.getPackCount());
 		assertFalse(merger.needsLargeOffsetsChunk());
@@ -76,8 +79,8 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000005", 12),
 				oidOffset("0000000000000000000000000000000000000007", 14),
 				oidOffset("0000000000000000000000000000000000000012", 1502));
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", idxOne, "p2", idxTwo, "p3", idxThree));
+		PackIndexMerger merger = createMergerFor("p1", idxOne, "p2", idxTwo,
+				"p3", idxThree);
 		assertEquals(9, merger.getUniqueObjectCount());
 		assertEquals(3, merger.getPackCount());
 		assertFalse(merger.needsLargeOffsetsChunk());
@@ -103,8 +106,8 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000001", 500),
 				oidOffset("0000000000000000000000000000000000000005", 12),
 				oidOffset("0000000000000000000000000000000000000010", 1500));
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", idxOne, "p2", idxOne, "p3", idxOne));
+		PackIndexMerger merger = createMergerFor("p1", idxOne, "p2", idxOne,
+				"p3", idxOne);
 		assertEquals(3, merger.getUniqueObjectCount());
 		assertEquals(3, merger.getPackCount());
 		assertFalse(merger.needsLargeOffsetsChunk());
@@ -127,8 +130,8 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000004", 500),
 				oidOffset("0000000000000000000000000000000000000007", 12),
 				oidOffset("0000000000000000000000000000000000000012", 1500));
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", idxOne, "p2", idxTwo, "p3", idxThree));
+		PackIndexMerger merger = createMergerFor("p1", idxOne, "p2", idxTwo,
+				"p3", idxThree);
 		assertEquals(6, merger.getUniqueObjectCount());
 		assertEquals(3, merger.getPackCount());
 		assertFalse(merger.needsLargeOffsetsChunk());
@@ -145,8 +148,46 @@ public class PackIndexMergerTest {
 	}
 
 	@Test
+	public void bySha1Iterator_withAnotherMidx() throws IOException {
+		PackIndex idxOne = indexOf(
+				oidOffset("0000000000000000000000000000000000000010", 1500));
+		PackIndex idxTwo = indexOf(
+				oidOffset("0000000000000000000000000000000000000002", 500),
+				oidOffset("0000000000000000000000000000000000000003", 12));
+		PackIndex idxThree = indexOf(
+				oidOffset("0000000000000000000000000000000000000004", 500),
+				oidOffset("0000000000000000000000000000000000000007", 12),
+				oidOffset("0000000000000000000000000000000000000012", 1500));
+		MultiPackIndex midx = midxOf("one", idxOne, "two", idxTwo, "three",
+				idxThree);
+
+		PackIndex idxFour = indexOf(
+				oidOffset("0000000000000000000000000000000000000001", 12),
+				oidOffset("0000000000000000000000000000000000000007", 600),
+				oidOffset("0000000000000000000000000000000000000015", 300));
+
+		PackIndexMerger merger = PackIndexMerger.builder()
+				.addMidx(midx.iterator()).addPack("four", idxFour).build();
+		assertEquals(8, merger.getUniqueObjectCount());
+		assertEquals(4, merger.getPackCount());
+		assertFalse(merger.needsLargeOffsetsChunk());
+		Iterator<MutableEntry> it = merger.bySha1Iterator();
+		assertNextEntry(it, "0000000000000000000000000000000000000001", 3, 12);
+		assertNextEntry(it, "0000000000000000000000000000000000000002", 1, 500);
+		assertNextEntry(it, "0000000000000000000000000000000000000003", 1, 12);
+		assertNextEntry(it, "0000000000000000000000000000000000000004", 2, 500);
+		assertNextEntry(it, "0000000000000000000000000000000000000007", 2, 12);
+		assertNextEntry(it, "0000000000000000000000000000000000000010", 0,
+				1500);
+		assertNextEntry(it, "0000000000000000000000000000000000000012", 2,
+				1500);
+		assertNextEntry(it, "0000000000000000000000000000000000000015", 3, 300);
+		assertFalse(it.hasNext());
+	}
+
+	@Test
 	public void merger_noIndexes() {
-        PackIndexMerger merger = new PackIndexMerger(new LinkedHashMap<>());
+		PackIndexMerger merger = PackIndexMerger.builder().build();
 		assertEquals(0, merger.getUniqueObjectCount());
 		assertFalse(merger.needsLargeOffsetsChunk());
 		assertTrue(merger.getPackNames().isEmpty());
@@ -156,8 +197,8 @@ public class PackIndexMergerTest {
 
 	@Test
 	public void merger_emptyIndexes() {
-		PackIndexMerger merger = new PackIndexMerger(
-                orderedMapOf("p1", indexOf(), "p2", indexOf()));
+		PackIndexMerger merger = createMergerFor("p1", indexOf(), "p2",
+				indexOf());
 		assertEquals(0, merger.getUniqueObjectCount());
 		assertFalse(merger.needsLargeOffsetsChunk());
 		assertEquals(2, merger.getPackNames().size());
@@ -172,8 +213,7 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000004", 12));
 		PackIndex idx2 = indexOf(oidOffset(
 				"0000000000000000000000000000000000000003", (1L << 31) + 10));
-		PackIndexMerger merger = new PackIndexMerger(
-                orderedMapOf("p1", idx1, "p2", idx2));
+		PackIndexMerger merger = createMergerFor("p1", idx1, "p2", idx2);
 		assertTrue(merger.needsLargeOffsetsChunk());
 		assertEquals(2, merger.getOffsetsOver31BitsCount());
 		assertEquals(3, merger.getUniqueObjectCount());
@@ -188,8 +228,7 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000004", 12));
 		PackIndex idx2 = indexOf(oidOffset(
 				"0000000000000000000000000000000000000003", (1L << 31) + 10));
-		PackIndexMerger merger = new PackIndexMerger(
-                orderedMapOf("p1", idx1, "p2", idx2));
+		PackIndexMerger merger = createMergerFor("p1", idx1, "p2", idx2);
 		assertFalse(merger.needsLargeOffsetsChunk());
 		assertEquals(2, merger.getOffsetsOver31BitsCount());
 		assertEquals(3, merger.getUniqueObjectCount());
@@ -209,8 +248,8 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000004", 502),
 				oidOffset("0000000000000000000000000000000000000007", 14),
 				oidOffset("0000000000000000000000000000000000000012", 1502));
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", idxOne, "p2", idxTwo, "p3", idxThree));
+		PackIndexMerger merger = createMergerFor("p1", idxOne, "p2", idxTwo,
+				"p3", idxThree);
 		assertArrayEquals(new int[] { 3, 3, 3 }, merger.getObjectsPerPack());
 	}
 
@@ -225,8 +264,8 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000004", 500),
 				oidOffset("0000000000000000000000000000000000000007", 12),
 				oidOffset("0000000000000000000000000000000000000012", 1500));
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", idxOne, "p2", idxTwo, "p3", idxThree));
+		PackIndexMerger merger = createMergerFor("p1", idxOne, "p2", idxTwo,
+				"p3", idxThree);
 		assertArrayEquals(new int[] { 1, 2, 3 }, merger.getObjectsPerPack());
 	}
 
@@ -236,26 +275,26 @@ public class PackIndexMergerTest {
 				oidOffset("0000000000000000000000000000000000000001", 500),
 				oidOffset("0000000000000000000000000000000000000005", 12),
 				oidOffset("0000000000000000000000000000000000000010", 1500));
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", idxOne, "p2", idxOne, "p3", idxOne));
+		PackIndexMerger merger = createMergerFor("p1", idxOne, "p2", idxOne,
+				"p3", idxOne);
 		assertArrayEquals(new int[] { 3, 0, 0 }, merger.getObjectsPerPack());
 	}
 
 	@Test
 	public void getObjectsPerPack_noIndexes() {
-		PackIndexMerger merger = new PackIndexMerger(new LinkedHashMap<>());
+		PackIndexMerger merger = PackIndexMerger.builder().build();
 		assertArrayEquals(new int[] {}, merger.getObjectsPerPack());
 	}
 
 	@Test
 	public void getObjectsPerPack_emptyIndexes() {
-		PackIndexMerger merger = new PackIndexMerger(
-				orderedMapOf("p1", indexOf(), "p2", indexOf()));
+		PackIndexMerger merger = createMergerFor("p1", indexOf(), "p2",
+				indexOf());
 		assertArrayEquals(new int[] { 0, 0 }, merger.getObjectsPerPack());
 	}
 
-	private static void assertNextEntry(
-			Iterator<MutableEntry> it, String oid, int packId, long offset) {
+	private static void assertNextEntry(Iterator<MutableEntry> it, String oid,
+			int packId, long offset) {
 		assertTrue(it.hasNext());
 		MutableEntry e = it.next();
 		assertEquals(oid, e.getObjectId().name());
@@ -271,21 +310,28 @@ public class PackIndexMergerTest {
 		return FakeIndexFactory.indexOf(Arrays.asList(objs));
 	}
 
-    private static LinkedHashMap<String, PackIndex> orderedMapOf(String s1,
-                                                                 PackIndex pi1, String s2, PackIndex pi2) {
-        LinkedHashMap map = new LinkedHashMap(3);
-        map.put(s1, pi1);
-        map.put(s2, pi2);
-        return map;
-    }
+	private static MultiPackIndex midxOf(String s1, PackIndex idx1, String s2,
+			PackIndex idx2, String s3, PackIndex idx3) throws IOException {
+		PackIndexMerger merger = createMergerFor(s1, idx1, s2, idx2, s3, idx3);
+		MultiPackIndexWriter w = new MultiPackIndexWriter();
 
-	private static LinkedHashMap<String, PackIndex> orderedMapOf(String s1,
-                                                                 PackIndex pi1, String s2, PackIndex pi2, String s3, PackIndex pi3) {
-        LinkedHashMap map = new LinkedHashMap(3);
-        map.put(s1, pi1);
-        map.put(s2, pi2);
-        map.put(s3, pi3);
-        return map;
-    }
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		w.write(NullProgressMonitor.INSTANCE, out, merger);
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		return MultiPackIndexLoader.read(in);
+	}
+
+	private static PackIndexMerger createMergerFor(String s1, PackIndex pi1,
+			String s2, PackIndex pi2) {
+		return PackIndexMerger.builder().addPack(s1, pi1).addPack(s2, pi2)
+				.build();
+	}
+
+	private static PackIndexMerger createMergerFor(String s1, PackIndex pi1,
+			String s2, PackIndex pi2, String s3, PackIndex pi3) {
+		return PackIndexMerger.builder().addPack(s1, pi1).addPack(s2, pi2)
+				.addPack(s3, pi3).build();
+	}
 
 }
