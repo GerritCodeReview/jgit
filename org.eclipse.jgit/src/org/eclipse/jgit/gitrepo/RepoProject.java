@@ -43,6 +43,7 @@ public class RepoProject implements Comparable<RepoProject> {
 	private String recommendShallow;
 	private String url;
 	private String defaultRevision;
+	private String resolvedRemote;
 
 	/**
 	 * The representation of a reference file configuration.
@@ -440,6 +441,26 @@ public class RepoProject implements Comparable<RepoProject> {
 	 */
 	public void setDestBranch(String destBranch) {
 		this.destBranch = destBranch;
+	}
+
+	/**
+	 * Get the resolved remote name of the project.
+	 *
+	 * @return the resolved remote name, or the raw remote if not resolved.
+	 * @since 6.11
+	 */
+	public String getResolvedRemote() {
+		return this.resolvedRemote != null ? this.resolvedRemote : this.remote;
+	}
+
+	/**
+	 * Set the resolved remote name of the project.
+	 *
+	 * @param resolvedRemote the resolved remote name
+	 * @since 6.11
+	 */
+	public void setResolvedRemote(String resolvedRemote) {
+		this.resolvedRemote = resolvedRemote;
 	}
 
 	private String getPathWithSlash() {

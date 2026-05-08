@@ -302,6 +302,7 @@ public class ManifestParser extends DefaultHandler {
 					revision = r.revision;
 				}
 			}
+			proj.setResolvedRemote(remote); // Store resolved remote
 			URI remoteUrl = remoteUrls.get(remote);
 			if (remoteUrl == null) {
 				String fetch = remotes.get(remote).fetch;

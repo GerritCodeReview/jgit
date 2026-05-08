@@ -337,6 +337,44 @@ public class RepoCommandTest extends RepositoryTestCase {
 	}
 
 	@Test
+	public void testGitAttributesRemote() throws Exception {
+		try (Repository child = cloneRepository(groupADb, true);
+				Repository dest = cloneRepository(db, true)) {
+			StringBuilder xmlContent = new StringBuilder();
+			xmlContent.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+					.append("<manifest>")
+					.append("<remote name=\"remote1\" fetch=\".\" />")
+					.append("<remote name=\"remote2\" fetch=\".\" />")
+					.append("<default revision=\"master\" remote=\"remote1\" />")
+					.append("<project path=\"foo\" name=\"plugins/cookbook\" groups=\"group1\" />")
+					.append("<project path=\"bar\" name=\"plugins/cookbook\" remote=\"remote2\" groups=\"group2\" />")
+					.append("</manifest>");
+			RepoCommand cmd = new RepoCommand(dest);
+
+			IndexedRepos repos = new IndexedRepos();
+			repos.put("plugins/cookbook", child);
+
+			RevCommit commit = cmd
+					.setInputStream(new ByteArrayInputStream(
+							xmlContent.toString().getBytes(UTF_8)))
+					.setRemoteReader(repos).setURI("").setTargetURI("gerrit")
+					.setRecordRemoteBranch(true).setRecordSubmoduleLabels(true)
+					.call();
+
+			String idStr = commit.getId().name() + ":" + ".gitattributes";
+			ObjectId attrId = dest.resolve(idStr);
+
+			try (ObjectReader reader = dest.newObjectReader()) {
+				byte[] bytes = reader.open(attrId)
+						.getCachedBytes(Integer.MAX_VALUE);
+				String content = new String(bytes, UTF_8);
+				assertTrue(content.contains("/foo group1 remote=remote1\n"));
+				assertTrue(content.contains("/bar group2 remote=remote2\n"));
+			}
+		}
+	}
+
+	@Test
 	public void absoluteRemoteURL() throws Exception {
 		try (Repository child = cloneRepository(groupADb, true);
 				Repository dest = cloneRepository(db, true)) {
@@ -1296,7 +1334,7 @@ public class RepoCommandTest extends RepositoryTestCase {
 					UTF_8)) {
 				String content = reader.readLine();
 				assertEquals(".gitattributes content should be as expected",
-						"/test a1 a2", content);
+						"/test a1 a2 remote=remote1", content);
 			}
 		}
 	}

@@ -192,6 +192,10 @@ class BareSuperprojectWriter {
 					rec.append(" "); //$NON-NLS-1$
 					rec.append(group);
 				}
+				if (proj.getResolvedRemote() != null) {
+					rec.append(" remote="); //$NON-NLS-1$
+					rec.append(proj.getResolvedRemote());
+				}
 				rec.append("\n"); //$NON-NLS-1$
 				attributes.append(rec.toString());
 			}
