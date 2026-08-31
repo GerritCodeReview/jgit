@@ -15,6 +15,8 @@ import static org.eclipse.jgit.lib.Constants.COMMIT_GENERATION_UNKNOWN;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -225,6 +227,57 @@ public class CommitGraphTest extends RepositoryTestCase {
 		assertTrue(ccpf.maybeContains("d/f".getBytes(UTF_8)));
 	}
 
+	@Test
+	public void changedPathsVersion_hasCPF_disabled_returnNoCPF()
+			throws Exception {
+		RevCommit a = tr.commit(tr.tree(tr.file("d/f", tr.blob("a"))));
+		writeAndReadCommitGraph(Collections.singleton(a), true, 0);
+		assertNull(commitGraph
+				.getChangedPathFilter(commitGraph.findGraphPosition(a)));
+	}
+
+	@Test
+	public void changedPathsVersion_hasCPF_v2_returnCPF() throws Exception {
+		RevCommit a = tr.commit(tr.tree(tr.file("d/f", tr.blob("a"))));
+		writeAndReadCommitGraph(Collections.singleton(a), true, 2);
+		assertNotNull(commitGraph
+				.getChangedPathFilter(commitGraph.findGraphPosition(a)));
+	}
+
+	@Test
+	public void changedPathsVersion_noCPF_v2_returnNoCPF() throws Exception {
+		RevCommit a = tr.commit(tr.tree(tr.file("d/f", tr.blob("a"))));
+		writeAndReadCommitGraph(Collections.singleton(a), false, 2);
+		assertNull(commitGraph
+				.getChangedPathFilter(commitGraph.findGraphPosition(a)));
+	}
+
+	@Test
+	public void changedPathsVersion_v1_noCPF() throws Exception {
+		RevCommit a = tr.commit(tr.tree(tr.file("d/f", tr.blob("a"))));
+		// The generated commit-graph has bloom filter version 2, so version 1
+		// should not load it
+		writeAndReadCommitGraph(Collections.singleton(a), true, 1);
+		assertNull(commitGraph
+				.getChangedPathFilter(commitGraph.findGraphPosition(a)));
+	}
+
+	@Test
+	public void changedPathsVersion_hasCPF_any_returnCPF() throws Exception {
+		RevCommit a = tr.commit(tr.tree(tr.file("d/f", tr.blob("a"))));
+		writeAndReadCommitGraph(Collections.singleton(a), true, -1);
+		assertNotNull(commitGraph
+				.getChangedPathFilter(commitGraph.findGraphPosition(a)));
+	}
+
+	@Test
+	public void changedPathsVersion_noCPF_any_returnNoCPF() throws Exception {
+		RevCommit a = tr.commit(tr.tree(tr.file("d/f", tr.blob("a"))));
+		writeAndReadCommitGraph(Collections.singleton(a), false, -1);
+		assertNull(commitGraph
+				.getChangedPathFilter(commitGraph.findGraphPosition(a)));
+	}
+
 	void writeAndReadCommitGraph(Set<ObjectId> wants) throws Exception {
 		NullProgressMonitor m = NullProgressMonitor.INSTANCE;
 		try (RevWalk walk = new RevWalk(db)) {
@@ -235,6 +288,21 @@ public class CommitGraphTest extends RepositoryTestCase {
 			InputStream inputStream = new ByteArrayInputStream(
 					os.toByteArray());
 			commitGraph = CommitGraphLoader.read(inputStream);
+		}
+	}
+
+	void writeAndReadCommitGraph(Set<ObjectId> wants, boolean write,
+			int changedPathsVersion) throws Exception {
+		NullProgressMonitor m = NullProgressMonitor.INSTANCE;
+		try (RevWalk walk = new RevWalk(db)) {
+			CommitGraphWriter writer = new CommitGraphWriter(
+					GraphCommits.fromWalk(m, wants, walk), write);
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			writer.write(m, os);
+			InputStream inputStream = new ByteArrayInputStream(
+					os.toByteArray());
+			commitGraph = CommitGraphLoader.read(inputStream,
+					changedPathsVersion);
 		}
 	}
 
